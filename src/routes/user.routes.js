@@ -1,10 +1,10 @@
 import {Router} from "express";
-import {registerUser} from "../contollers/user.controller.js "
+import { userRegister } from "../controllers/user.controller.js";
 
 const router = Router();
 
-router.route("/register").post(registerUser )
-
+router.route("/register").post(userRegister)
+console.log("User routes loaded");
 
 
 

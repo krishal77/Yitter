@@ -7,4 +7,4 @@ const userRegister= asyncHandler(async(req,res)=>{
     })
 })
 
-export {userRegister }
+export {userRegister}
