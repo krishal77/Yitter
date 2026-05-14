@@ -23,3 +23,5 @@ catch(error){
     return null;
 }
 }
+
+export {uploadOnCloudinary}
