@@ -110,7 +110,9 @@ return res.status(200).cookie( "accessToken",accessToken,options).cookie("refres
     user: loggedInUser, accessToken,refreshToken
 }, "User logged In successfully"))
 
-
+const logoutUser=asyncHandler(async(req,res)=>{
+  
+})
 
 
 })
