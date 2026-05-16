@@ -6,13 +6,15 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 
 
 const generateAccessAndRefreshTokens= async (userId)=>{
+   
 try{
  const user=await User.findById(userId);
- const accessToken=user.generateAccessToken()
- const refreshToken=user.generateRefreshToken()
+ console.log("2");
+ const accessToken=await user.generateAccessToken()
+ const refreshToken=await user.generateRefreshToken()
 
  user.refreshToken=refreshToken
- await user.save({validationBeforeSave:false})
+ await user.save({validateBeforeSave:false})
  return{accessToken,refreshToken}
 
 }catch(error){
@@ -23,7 +25,7 @@ try{
 
 const userRegister= asyncHandler(async(req,res)=>{
  const {username,email,fullName,password} = req.body
-   
+ 
  if([username,email,fullName,password].some((field)=>
 field?.trim()==="") // throws error even if 1 field is empty after removing spaces
 ){
@@ -79,8 +81,9 @@ const user= await User.create({
 })
  
 const loginUser= asyncHandler(async (req,res)=>{
+    
  const {email,username,password}= req.body
- if(!username || !email){
+ if(!username && !email){
     throw new ApiError(400,"username or email is required");
  }
 
@@ -98,10 +101,10 @@ const isPasswordValid=await user.isPasswordCorrect(password);
  }
  const{accessToken,refreshToken }=await generateAccessAndRefreshTokens(user._id)
 
- const loggedInUser=await User.findById(user._id).some("-password -refreshToken")
+ const loggedInUser=await User.findById(user._id).select("-password -refreshToken")
 
 const options={
-    httsOnly:true,//only modifiable via server
+    httpOnly:true,//only modifiable via server
     secure:true
 }
 
@@ -109,23 +112,25 @@ return res.status(200).cookie( "accessToken",accessToken,options).cookie("refres
 .json(new ApiResponse(200,{
     user: loggedInUser, accessToken,refreshToken
 }, "User logged In successfully"))
-
+})
 const logoutUser=asyncHandler(async(req,res)=>{
    await User.findByIdAndUpdate(
-        res.user._id,
+        req.user._id,
         {
-            $set:{
-                refreshToken:undefined
+            $unset: {
+                refreshToken: 1 // this removes the field from document
             }
         },
         {
             new:true
         }
     )
-})
 
 
+const options={
+    httpOnly:true,//only modifiable via server
+    secure:true
+}
 return res.status(200).clearCookie("accessToken",options).clearCookie("refreshToken",options).json(new ApiResponse(200,{},"User logged out successfully"))
-
 })
-export {userRegister,loginUser} 
+export {userRegister,loginUser, logoutUser} 
