@@ -10,7 +10,6 @@ const generateAccessAndRefreshTokens= async (userId)=>{
    
 try{
  const user=await User.findById(userId);
- console.log("2");
  const accessToken=await user.generateAccessToken()
  const refreshToken=await user.generateRefreshToken()
 
@@ -25,6 +24,7 @@ try{
 
 
 const userRegister= asyncHandler(async(req,res)=>{
+    
  const {username,email,fullName,password} = req.body
  
  if([username,email,fullName,password].some((field)=>
@@ -82,7 +82,7 @@ const user= await User.create({
 })
  
 const loginUser= asyncHandler(async (req,res)=>{
-    
+  
  const {email,username,password}= req.body
  if(!username && !email){
     throw new ApiError(400,"username or email is required");
@@ -173,10 +173,25 @@ const refreshAccessToken= asyncHandler(async(req,res)=>{
 
 })
 
+const changeCurrentPassword= asyncHandler(async(req,res)=>{
+const {oldpassword,newPassword}=req.body
+const user=await User.findById(req.user?.id)
+const isPasswordCorrect= await user.isPasswordCorrect(oldpassword)
+if(!isPasswordCorrect){
+    throw new ApiError(400,"Invalid old password")
+}
+user.password=newPassword
+await user.save({validateBeforeSave:false})
+
+return res.status(200).json( new ApiResponse(200,{},"Password changed successfully"))
+
+
+})
+
 
 
 
 export {userRegister,
     loginUser,
      logoutUser,
-    refreshAccessToken} 
+    refreshAccessToken,changeCurrentPassword} 
