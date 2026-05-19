@@ -307,4 +307,10 @@ return res
 export {userRegister,
     loginUser,
      logoutUser,
-    refreshAccessToken,changeCurrentPassword,getCurrentUser,updateUserAvatar,updateUserCoverImage} 
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateUserAvatar,
+    updateUserCoverImage,
+    getChannelUserProfile
+} 
