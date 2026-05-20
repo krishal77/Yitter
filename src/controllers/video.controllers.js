@@ -45,7 +45,7 @@ return res.status(201).json(new ApiResponse(201,video,"video uploaded successful
 const updateVideo= asyncHandler(async(req,res)=>{
     
     const {videoId}= req.params
-    
+
     if(!isValidObjectId(videoId)){
     throw new ApiError(400, "Invalid video id")
 }
@@ -58,6 +58,15 @@ const updateVideo= asyncHandler(async(req,res)=>{
     if(!newThumbnaiLocalPath){
         throw new ApiError(400,"thumbnail is missing")
     }
+    //to verify user
+    const video = await Video.findById(videoId)
+if(!video){
+    throw new ApiError(404, "Video not found")
+}
+if(video.owner.toString() !== req.user._id.toString()){
+    throw new ApiError(403, "You can't update this video")
+}
+
     const newThumbnail= await uploadOnCloudinary(newThumbnaiLocalPath)
     if(!newThumbnail){
        throw new ApiError(400,"Error while uploading thumbnail")
@@ -75,4 +84,22 @@ const updateVideo= asyncHandler(async(req,res)=>{
  
     return res.status(200).json(new ApiResponse(200,updatedVideo,"video updated successfully!"))
 })
-export {publishAVideo,updateVideo}
+const deleteVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if(!isValidObjectId(videoId)){
+    throw new ApiError(400, "Invalid video id")
+}
+const video= await Video.findById(videoId)
+if(!video){
+    throw new ApiError(404,"video not found")
+}
+if(video.owner.toString()!==req.user._id.toString()){
+    throw new ApiError(403,"You cant delete this video")
+}
+
+await Video.findByIdAndDelete(videoId)
+//should also delete from cloudinary, will do later
+return res.status(200).json(new ApiResponse(200,{},"Video deleted successfully"))
+})
+
+export {publishAVideo,updateVideo,deleteVideo}
