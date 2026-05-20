@@ -15,7 +15,7 @@ const publishAVideo= asyncHandler(async(req,res)=>{
 field?.trim()==="")){
         throw new ApiError(400,"title and desciption are required")
     }
-    const localThumbnailPath=req.files.thumbnail[0]?.path
+    const localThumbnailPath=req.files?.thumbnail[0]?.path
     const localVideoPath=req.files?.video[0]?.path
     if(!localVideoPath){
         throw new ApiError(400,"video is required")
@@ -37,10 +37,10 @@ field?.trim()==="")){
         title,
         description,
         thumbnail: thumbnail.url,
-        duration:uploadedVideo.duration,
+        duration:uploadedVideo.duration || 0,
         owner: req.user._id 
     })
-return res.status(200).json(new ApiResponse(200,video,"video uploaded successfully!!"))
+return res.status(201).json(new ApiResponse(200,video,"video uploaded successfully!!"))
 })
 
 export {publishAVideo}
