@@ -30,7 +30,7 @@ field?.trim()==="")){
     }
     const thumbnail=await uploadOnCloudinary(localThumbnailPath)
      if(!thumbnail){
-        throw new ApiError(500,"Error while uploading video")
+        throw new ApiError(500,"Error while uploading thumbnail")
     }
     const video= await Video.create({
         videoFile:uploadedVideo.url,
@@ -40,7 +40,39 @@ field?.trim()==="")){
         duration:uploadedVideo.duration || 0,
         owner: req.user._id 
     })
-return res.status(201).json(new ApiResponse(200,video,"video uploaded successfully!!"))
+return res.status(201).json(new ApiResponse(201,video,"video uploaded successfully!!"))
 })
-
-export {publishAVideo}
+const updateVideo= asyncHandler(async(req,res)=>{
+    
+    const {videoId}= req.params
+    
+    if(!isValidObjectId(videoId)){
+    throw new ApiError(400, "Invalid video id")
+}
+    const{title,description}=req.body
+    if(!title || !description){
+       throw new ApiError(400,"Both title and description is required")
+    }
+    const newThumbnaiLocalPath=req.file?.path
+    console.log(req.file)
+    if(!newThumbnaiLocalPath){
+        throw new ApiError(400,"thumbnail is missing")
+    }
+    const newThumbnail= await uploadOnCloudinary(newThumbnaiLocalPath)
+    if(!newThumbnail){
+       throw new ApiError(400,"Error while uploading thumbnail")
+    }
+    const updatedVideo=await Video.findByIdAndUpdate(videoId,{
+        $set:{
+            title,
+            description,
+            thumbnail:newThumbnail.url
+        }
+       
+    }, {
+            new:true
+        })
+ 
+    return res.status(200).json(new ApiResponse(200,updatedVideo,"video updated successfully!"))
+})
+export {publishAVideo,updateVideo}
