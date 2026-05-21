@@ -120,4 +120,19 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     })
     return res.status(200).json(new ApiResponse(200,updatedVideo,"successfully toggled"));
 })
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if(!isValidObjectId(videoId)){
+        throw new ApiError(400,"invalid video id")
+    }
+   const video = await Video.findById(videoId).select(
+        "title description views duration isPublished owner"
+    );
+    if(!video){
+        throw new ApiError(404,"no video found")
+    }
+   
+    return res.status(200).json(new ApiResponse(200,video,"video found successfully"))
+})
+
 export {publishAVideo,updateVideo,deleteVideo,togglePublishStatus}
