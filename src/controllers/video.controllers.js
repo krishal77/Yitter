@@ -134,9 +134,46 @@ const getVideoById = asyncHandler(async (req, res) => {
    
     return res.status(200).json(new ApiResponse(200,video,"video found successfully"))
 })
+const getAllVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const filter = {};
+    if (query) {
+        filter.$or = [
+            { title: { $regex: query, $options: "i" } },
+            { description: { $regex: query, $options: "i" } }
+        ];
+    }
+     if (userId) {
+        if (!isValidObjectId(userId)) {
+            throw new ApiError(400, "Invalid userId");
+        }
+        filter.owner = userId;
+    }
+     filter.isPublished = true; 
+     const sortOptions = {};
+    sortOptions[sortBy || "createdAt"] = sortType === "asc" ? 1 : -1;
+     const skip = (Number(page) - 1) * Number(limit);
+
+      const videos = await Video.find(filter)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(Number(limit))
+        .select("title description views duration isPublished owner createdAt");
+const totalVideos = await Video.countDocuments(filter);
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            videos,
+            totalVideos,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalVideos /Number(limit) )
+        }, "Videos fetched successfully")
+    );
+});
 
 export {publishAVideo,
     updateVideo,
     deleteVideo,
     togglePublishStatus,
-    getVideoById}
+    getVideoById,
+    getAllVideos}

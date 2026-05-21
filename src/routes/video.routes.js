@@ -3,14 +3,17 @@ import { publishAVideo,
     updateVideo,
     deleteVideo,
     togglePublishStatus,
-getVideoById} from "../controllers/video.controllers.js";
+getVideoById,
+getAllVideos} from "../controllers/video.controllers.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router=Router()
 router.use(verifyJWT);
 
-router.route("/publish").post(upload.fields([
+router.route("/")
+.get(getAllVideos)
+.post(upload.fields([
     {
         name:"video",
         maxCount:1
