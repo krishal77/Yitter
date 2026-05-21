@@ -135,4 +135,8 @@ const getVideoById = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200,video,"video found successfully"))
 })
 
-export {publishAVideo,updateVideo,deleteVideo,togglePublishStatus}
+export {publishAVideo,
+    updateVideo,
+    deleteVideo,
+    togglePublishStatus,
+    getVideoById}
