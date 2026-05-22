@@ -241,19 +241,28 @@ const getChannelUserProfile= asyncHandler(async(req,res)=>{
         throw new ApiError(400,"username is missing")
     }
     const channel = await User.aggregate([{
+        //find the channel with given username
         $match:{
             username:username?.toLowerCase()
         }
         
     },
     {
-        $lookup:{
-            from:"subscriptions",
-            localField:"_id",
-            foreignField:"channel",
-            as:"subscribers"
+        $lookup: {
+    // Collection to join with
+    from: "subscriptions",
 
-        }
+    // Field from current collection
+    localField: "_id", //takes id of current channel and goes to subscriptions
+
+    // Field in subscriptions collection
+    // that references the current user's _id
+    foreignField: "channel", // if channel id matches then it stores
+
+    // Name of the new array field
+    // where matched documents will be stored
+    as: "subscribers"
+}
     },
     {
         $lookup:{
@@ -265,10 +274,10 @@ const getChannelUserProfile= asyncHandler(async(req,res)=>{
     },{
         $addFields:{
             subscribersCount:{
-                $size:"$subscribers"
+                $size:"$subscribers"//gives subscribers count
             },
             channelsSubscribedTo:{
-                $size:"$subscribedTo"
+                $size:"$subscribedTo" //gives subscribed to count
             },
             isSubscribed:{
                 $cond:{
