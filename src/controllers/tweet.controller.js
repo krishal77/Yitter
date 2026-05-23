@@ -22,6 +22,13 @@ const createTweet = asyncHandler(async(req,res)=>{
     return res.status(201).json(new ApiResponse(201,tweet,"tweet is created"))
 })
 
+const getUserTweets = asyncHandler(async (req, res) => {
+ 
+const tweet = await Tweet.find({ owner: req.user._id });
+
+return res.status(200).json(new ApiResponse(200,tweet,"tweets fetched successfully"))
+})
+
 const updatedTweet = asyncHandler(async (req, res) => {
     const {content}=req.body
     const { tweetId } = req.params;
@@ -76,4 +83,4 @@ return res.status(200).json(new ApiResponse(200,{},"tweet is deleted successfull
 
 
 })
-export {createTweet,updatedTweet,deleteTweet}
+export {createTweet,updatedTweet,deleteTweet,getUserTweets}
