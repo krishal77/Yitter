@@ -54,7 +54,7 @@ const updatedTweet = asyncHandler(async (req, res) => {
     );
 
 
-    return res.status(201).json(new ApiResponse(201,updatedTweet,"tweet is updated"))
+    return res.status(200).json(new ApiResponse(200,updateTweet,"tweet is updated"))
 })
 const deleteTweet = asyncHandler(async (req, res) => {
    const{tweetId}=req.params
@@ -72,8 +72,8 @@ if(tweet.owner.toString()!==req.user._id.toString())
 }
 await Tweet.findByIdAndDelete(tweetId)
 
-return res.status(204).json(new ApiResponse(204,{},"tweet is deleted successfully"))
+return res.status(200).json(new ApiResponse(200,{},"tweet is deleted successfully"))
 
 
 })
-export {createTweet,updatedTweet}
+export {createTweet,updatedTweet,deleteTweet}
