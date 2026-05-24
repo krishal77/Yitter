@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import {Comment} from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse} from "../utils/ApiResponse.js";
@@ -29,4 +29,48 @@ const comment = await Comment.create({
     );
 })
 
-export {addComment}
+const updateComment = asyncHandler(async (req, res) => {
+ const {content}=req.body
+ const{commentId}=req.params
+  if(!content?.trim()){
+        throw new ApiError(400,"comment is required");
+    }
+     const comment = await Comment.findById(commentId);
+    
+        if (!comment) {
+            throw new ApiError(404, "Comment not found");
+        }
+    if (comment.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You can only update your own comment");
+    }
+
+const updatedComment = await Comment.findByIdAndUpdate(commentId,{
+    $set:{
+        content: content.trim()
+ } },
+   {
+            new: true
+        }
+)
+
+return res.status(200).json(new ApiResponse(200,updatedComment,"comment successfully updated"))
+})
+
+const deleteComment= asyncHandler(async(req,res)=>{
+    const {commentId}=req.params
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400, "Invalid Comment id")
+    }
+
+    const comment= await Comment.findById(commentId)
+    if(!comment){
+        throw new ApiError(404,"comment dosent exist");
+    }
+    if(comment.owner.toString()!==req.user._id.toString()){
+         throw new ApiError(403, "You can only delete your own comment");
+    }
+    await Comment.findByIdAndDelete(commentId)
+
+    return res.status(200).json(new ApiResponse(200,{},"comment successfully deleted"))
+})
+export {addComment,updateComment,deleteComment}

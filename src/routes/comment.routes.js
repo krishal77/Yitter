@@ -6,6 +6,7 @@ import { addComment } from "../controllers/comment.controller.js";
 const router=Router();
 
 router.use(verifyJWT);
-router.route("/comment").post(addComment)
+router.route("/:videoId").get(getVideoComments).post(addComment);
+router.route("/c/:commentId").delete(deleteComment).patch(updateComment);
 
 export default router
