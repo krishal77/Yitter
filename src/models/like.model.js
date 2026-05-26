@@ -1,4 +1,4 @@
-import mongoose,{mongo, Schema, SchemaType} from "mongoose";
+import mongoose,{ Schema} from "mongoose";
 
 const likeSchema= new Schema({
     comment:{
@@ -11,7 +11,8 @@ const likeSchema= new Schema({
     },
     likedBy:{
         type:Schema.Types.ObjectId,
-       ref:"User"
+       ref:"User",
+       required: true,
     },
     tweet:{
         type:Schema.Types.ObjectId,
@@ -19,5 +20,11 @@ const likeSchema= new Schema({
     },
     
 },{timestamps:true})
+
+
+likeSchema.index({ video: 1, likedBy: 1 }, { unique: true, sparse: true });
+likeSchema.index({ comment: 1, likedBy: 1 }, { unique: true, sparse: true });
+likeSchema.index({ tweet: 1, likedBy: 1 }, { unique: true, sparse: true });
+
 
 export const Like= mongoose.model("Like",likeSchema)

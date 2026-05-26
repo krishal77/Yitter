@@ -217,7 +217,7 @@ const updateUserAvatar=asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Error while uploading avatar on cloudinary")
     }
      
-    const user=await findByIdAndUpdate(req.user?._id,{$set:{avatar:avatar.url}},{new:true}).select("-password")
+    const user=await User.findByIdAndUpdate(req.user?._id,{$set:{avatar:avatar.url}},{new:true}).select("-password")
     return res.status(200).json(200,user,"Avatar  Image updated successfully")
 })
 const updateUserCoverImage=asyncHandler(async(req,res)=>{
