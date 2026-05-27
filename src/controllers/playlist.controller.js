@@ -86,19 +86,74 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     if(!playlist){
         throw new ApiError(404,"playlist not found")
     }
-    if(!playlist.owner.toString()!==req.user._id.toString()){
+    if(playlist.owner.toString()!==req.user._id.toString()){
         throw new ApiError(403,"action forbidden")
     }
     const video=await Video.findById(videoId)
     if(!video){
         throw new ApiError(404,"video not found")
     }
-    if(playlist.videos.includes(videoId)){
+    if(!playlist.videos.includes(videoId)){
         throw new ApiError(409,"this video already exist in playlist")
     }
     playlist.videos.pull(videoId)
     await playlist.save();
     return res.status(200).json(new ApiResponse(200,{},"video removed successfully"))
 })
+const deletePlaylist = asyncHandler(async (req, res) => {
+    const {playlistId} = req.params
+     if(!isValidObjectId(playlistId)){
+        throw new ApiError(400,"Invalid playlist id")
+    }
+    const playlist=await Playlist.findById(playlistId);
+    if(!playlist){
+        throw new ApiError(404,"playlist not found")
+    }
 
-export {createPlaylist,getUserPlaylists,getPlaylistById,addVideoToPlaylist,removeVideoFromPlaylist}
+if(playlist.owner.toString()!==req.user._id.toString()){
+        throw new ApiError(403,"action forbidden")
+    }
+
+    await Playlist.findByIdAndDelete(playlistId)
+
+    return res.status(200).json(new ApiResponse(200,{},"playlist deleted successfully"))
+})
+
+const updatePlaylist = asyncHandler(async (req, res) => {
+    const {playlistId} = req.params
+    const {name, description} = req.body
+
+     if((!name&&!description)){
+        throw new ApiError(400,"Field cant be empty");
+    }
+
+     if(!isValidObjectId(playlistId)){
+        throw new ApiError(400,"Invalid playlist id")
+    }
+
+     const playlist=await Playlist.findById(playlistId);
+    if(!playlist){
+        throw new ApiError(404,"playlist not found")
+    }
+     if(playlist.owner.toString()!==req.user._id.toString()){
+        throw new ApiError(403,"action forbidden")
+    }
+   const updatedPlaylist= await Playlist.findByIdAndUpdate(playlistId,{
+       ...(name && { name }),
+            ...(description && { description }),
+    },{
+new:true
+    }
+)
+return res.status(200).json(new ApiResponse(200,updatedPlaylist,"playlist updated succesfully!"))
+    
+})
+
+
+export {createPlaylist,
+    getUserPlaylists
+    ,getPlaylistById,
+    addVideoToPlaylist,
+    deletePlaylist,
+    removeVideoFromPlaylist,
+    updatePlaylist}
