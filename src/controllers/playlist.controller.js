@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {Playlist} from "../models/playlist.model.js"
@@ -24,4 +24,28 @@ const createPlaylist = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201,playlist,"Playlist Created Successfully"))
 })
 
-export {createPlaylist}
+const getUserPlaylists = asyncHandler(async (req, res) => {
+    const {userId} = req.params
+    if(!isValidObjectId(userId)){
+        throw new ApiError(400,"Invalid User Id")
+    }
+   const playlist= await Playlist.find({owner:userId}).populate("videos").sort({ createdAt: -1 });
+
+   return res.status(200).json(new ApiResponse(200,playlist,"playlist returned"))
+
+
+})
+const getPlaylistById = asyncHandler(async (req, res) => {
+    const {playlistId} = req.params
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(200,"Invalid playlist id");
+    }
+    const playlist=await Playlist.findById(playlistId);
+    if(!playlist){
+        throw new ApiError(404,"playlist not found")
+    }
+
+    return res.status(200).json(new ApiResponse(200,playlist,"playlist fetched successfully"))
+})
+
+export {createPlaylist,getUserPlaylists,getPlaylistById}
