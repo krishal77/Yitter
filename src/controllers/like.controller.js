@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {Like} from "../models/like.model.js"
 import {Comment} from "../models/comment.model.js";
 import {Video} from "../models/video.models.js"
-import {Tweet} from "../models/tweet.models.js"
+import {Tweet} from "../models/tweet.model.js"
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const {videoId} = req.params
 
@@ -105,3 +105,8 @@ return res
         .json(new ApiResponse(200, { isLiked: true, likeId: newLike._id }, "tweet liked")); 
 }
 );
+
+export { toggleCommentLike,
+    toggleTweetLike,
+    toggleVideoLike,
+    getLikedVideos}

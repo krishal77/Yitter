@@ -3,8 +3,9 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { ApiError } from "../utils/ApiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Video} from "../models/video.models.js"
-import {Subscripton} from "../models/subscriptions.models.js"
-import {Like} from "./like.controller.js"
+import {Subscription} from "../models/subscriptions.models.js"
+import {Like} from "../models/like.model.js"
+import {User} from "../models/user.models.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
 const { userId } = req.params
@@ -54,7 +55,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
    }
    const video=await Video.find({owner:userId}).sort({ createdAt: -1 })
 
-   if (videos.length === 0) {
+   if (video.length === 0) {
     throw new ApiError(404, "No videos found")
 }
 
