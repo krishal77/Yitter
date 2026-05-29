@@ -8,58 +8,89 @@ import {Like} from "../models/like.model.js"
 import {User} from "../models/user.models.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
-const { userId } = req.params
+    const channelId = req.user?._id
 
-    if (!mongoose.isValidObjectId(userId)) {
-        throw new ApiError(400, "Invalid user id")
+    if (!channelId) {
+        throw new ApiError(401, "Unauthorized request")
     }
-     const videos = await Video.find({ owner: userId })
-     const totalVideos = videos.length
-     const totalViews = videos.reduce(
-        (acc, video) => acc + (video.views || 0),
-        0
-    )
- const videoIds = videos.map(video => video._id)
-   const totalLikes = await Like.countDocuments({
-        video: { $in: videoIds }
+
+    // Total videos
+    const totalVideos = await Video.countDocuments({
+        owner: channelId
     })
-     const totalSubscribers = await Subscription.countDocuments({
-        channel: userId
+
+    // Total video views
+    const totalViewsResult = await Video.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(channelId)
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalViews: {
+                    $sum: "$views"
+                }
+            }
+        }
+    ])
+
+    const totalViews = totalViewsResult[0]?.totalViews || 0
+
+    // Total subscribers
+    const totalSubscribers = await Subscription.countDocuments({
+        channel: channelId
     })
-return res.status(200).json(
+
+    // Get all video ids of this channel
+    const channelVideos = await Video.find({
+        owner: channelId
+    }).select("_id")
+
+    const videoIds = channelVideos.map(video => video._id)
+
+    // Total likes on all videos
+    const totalLikes = await Like.countDocuments({
+        video: {
+            $in: videoIds
+        }
+    })
+
+    return res.status(200).json(
         new ApiResponse(
             200,
             {
                 totalVideos,
                 totalViews,
-                totalLikes,
-                totalSubscribers
+                totalSubscribers,
+                totalLikes
             },
             "Channel stats fetched successfully"
         )
     )
 })
 
-
-
-
-
 const getChannelVideos = asyncHandler(async (req, res) => {
-    const {userId}=req.params
-    if(!isValidObjectId(userId)){
-        throw new ApiError(400,"Invalid user id")
+    const channelId = req.user?._id
+
+    if (!channelId) {
+        throw new ApiError(401, "Unauthorized request")
     }
-    const user= await User.findById(userId)
-   if(!user){
-    throw new ApiError(404,"user not found")
-   }
-   const video=await Video.find({owner:userId}).sort({ createdAt: -1 })
 
-   if (video.length === 0) {
-    throw new ApiError(404, "No videos found")
-}
+    const videos = await Video.find({
+        owner: channelId
+    }).sort({
+        createdAt: -1
+    })
 
-   return res.status(200).json(new ApiResponse(200,video,"all videos fetched"))
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            videos,
+            "Channel videos fetched successfully"
+        )
+    )
 })
 
 export {

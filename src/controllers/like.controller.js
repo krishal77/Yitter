@@ -105,7 +105,22 @@ return res
         .json(new ApiResponse(200, { isLiked: true, likeId: newLike._id }, "tweet liked")); 
 }
 );
+const getLikedVideos = asyncHandler(async (req, res) => {
 
+    const userId = req.user?._id
+
+    const likedVideos = await Like.find({
+        likedBy: userId
+    }).populate("video")
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            likedVideos,
+            "Liked videos fetched successfully"
+        )
+    )
+})
 export { toggleCommentLike,
     toggleTweetLike,
     toggleVideoLike,

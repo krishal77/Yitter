@@ -56,7 +56,28 @@ const updatedComment = await Comment.findByIdAndUpdate(commentId,{
 
 return res.status(200).json(new ApiResponse(200,updatedComment,"comment successfully updated"))
 })
+//added
+const getVideoComments = asyncHandler(async (req, res) => {
 
+    const { videoId } = req.params
+    const { page = 1, limit = 10 } = req.query
+
+    const comments = await Comment.find({
+        video: videoId
+    })
+    .populate("owner", "username avatar")
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
+    .sort({ createdAt: -1 })
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            comments,
+            "Comments fetched successfully"
+        )
+    )
+})
 const deleteComment= asyncHandler(async(req,res)=>{
     const {commentId}=req.params
     if(!isValidObjectId(commentId)){
@@ -74,4 +95,4 @@ const deleteComment= asyncHandler(async(req,res)=>{
 
     return res.status(200).json(new ApiResponse(200,{},"comment successfully deleted"))
 })
-export {addComment,updateComment,deleteComment}
+export {addComment,getVideoComments ,updateComment,deleteComment}
